@@ -36,31 +36,32 @@ SorakaMenu.AutoPot:Boolean("AutoBlue", "Use Blue Potion", true)
 SorakaMenu.AutoPot:Slider("PotBluePro", "Use At %", 50, 1, 100, 1)
 
 SorakaMenu:SubMenu("Misc", "Misc")
-SorakaMenu.Misc:Boolean("Autolvl", "Auto Level Spells", false)
+SorakaMenu.Misc:Boolean("Autolvl", "Auto Level Spells", true)
 
 global_ticks = 0
 currentTicks = GetTickCount()
 
 OnLoop(function(myHero)
 
-local target = IOW:GetTarget()
+local target = GetCurrentTarget()
 local myHero = GetMyHero()
+local EPred = GetPredictionForPlayer(GoS:myHeroPos(),target,GetMoveSpeed(target),1600,0,GetCastRange(myHero, _Q),50,false,true);    
+local QPred = GetPredictionForPlayer(GoS:myHeroPos(),target,GetMoveSpeed(target),1750,500,GetCastRange(myHero, _E),300,false,true);
 
 
 --Combo
     if IOW:Mode() == "Combo" then
-        local target = GetCurrentTarget()
-            
-            local EPred = GetPredictionForPlayer(GoS:myHeroPos(),target,GetMoveSpeed(target),1600,0,GetCastRange(myHero, _Q),50,false,true);
-                if CanUseSpell(myHero, _E) == READY and EPred.HitChance == 1 and GoS:ValidTarget(target, GetCastRange(myHero, _E)) and SorakaMenu.Combo.E:Value() then
-                    CastSkillShot(_E,EPred.PredPos.x,EPred.PredPos.y,EPred.PredPos.z);
-                end
-            
-            local QPred = GetPredictionForPlayer(GoS:myHeroPos(),target,GetMoveSpeed(target),1750,500,GetCastRange(myHero, _E),300,false,true);
-                if CanUseSpell(myHero, _Q) == READY and QPred.HitChance == 1 and GoS:ValidTarget(target, GetCastRange(myHero, _Q)) and SorakaMenu.Combo.Q:Value() then
-                    CastSkillShot(_Q,QPred.PredPos.x,QPred.PredPos.y,QPred.PredPos.z);
-                end
-                
+	
+		
+			if CanUseSpell(myHero, _Q) == READY and QPred.HitChance == 1 and GoS:ValidTarget(target, GetCastRange(myHero, _Q)) and SorakaMenu.Combo.Q:Value() then
+                CastSkillShot(_Q,QPred.PredPos.x,QPred.PredPos.y,QPred.PredPos.z);
+            end
+		
+            if CanUseSpell(myHero, _E) == READY and EPred.HitChance == 1 and GoS:ValidTarget(target, GetCastRange(myHero, _E)) and SorakaMenu.Combo.E:Value() then
+                CastSkillShot(_E,EPred.PredPos.x,EPred.PredPos.y,EPred.PredPos.z);
+            end
+			
+			
 			if SorakaMenu.Combo.W:Value() then
 				for _, ally in pairs(GoS:GetAllyHeroes()) do
                     if (100 * GetCurrentHP(ally)/GetMaxHP(ally)) < SorakaMenu.Healing.HealW:Value() and
@@ -83,32 +84,15 @@ local myHero = GetMyHero()
 
 --Harass		
 	if IOW:Mode() == "Harass" then
-            local target = IOW:GetTarget(1000, DAMAGE_MAGIC)
-            
-			if GetCurrentMana(myHero)>GetCastMana(myHero,_Q,GetCastLevel(myHero,_Q)) + GetCastMana(myHero,_E,GetCastLevel(myHero,_E)) then
-            local EPred = GetPredictionForPlayer(GoS:myHeroPos(),target,GetMoveSpeed(target),1600,0,GetCastRange(myHero, _E),50,false,true);
-                if CanUseSpell(myHero, _E) == READY and EPred.HitChance == 1 and GoS:ValidTarget(target, GetCastRange(myHero, _E)) and SorakaMenu.Harass.E:Value() then
-                    CastSkillShot(_E,EPred.PredPos.x,EPred.PredPos.y,EPred.PredPos.z);
-                end
-            
-            local QPred = GetPredictionForPlayer(GoS:myHeroPos(),target,GetMoveSpeed(target),1750,500,GetCastRange(myHero, _Q),300,false,true);
-                if CanUseSpell(myHero, _Q) == READY and QPred.HitChance == 1 and GoS:ValidTarget(target, GetCastRange(myHero, _Q)) and SorakaMenu.Harass.Q:Value() then
-                    CastSkillShot(_Q,QPred.PredPos.x,QPred.PredPos.y,QPred.PredPos.z);
-                end
-            end
 			
-			else if GetCurrentMana(myHero)<GetCastMana(myHero,_Q,GetCastLevel(myHero,_Q)) + GetCastMana(myHero,_E,GetCastLevel(myHero,_E)) then
-			local QPred = GetPredictionForPlayer(GoS:myHeroPos(),target,GetMoveSpeed(target),1750,500,GetCastRange(myHero, _Q),300,false,true);
                 if CanUseSpell(myHero, _Q) == READY and QPred.HitChance == 1 and GoS:ValidTarget(target, GetCastRange(myHero, _Q)) and SorakaMenu.Harass.Q:Value() then
-                    CastSkillShot(_Q,QPred.PredPos.x,QPred.PredPos.y,QPred.PredPos.z);
+                    CastSkillShot(_Q,QPred.PredPos.x,QPred.PredPos.y,QPred.PredPos.z)
                 end
 			
-			local EPred = GetPredictionForPlayer(GoS:myHeroPos(),target,GetMoveSpeed(target),1600,0,GetCastRange(myHero, _E),50,false,true);
                 if CanUseSpell(myHero, _E) == READY and EPred.HitChance == 1 and GoS:ValidTarget(target, GetCastRange(myHero, _E)) and SorakaMenu.Harass.E:Value() then
-                    CastSkillShot(_E,EPred.PredPos.x,EPred.PredPos.y,EPred.PredPos.z);
+                    CastSkillShot(_E,EPred.PredPos.x,EPred.PredPos.y,EPred.PredPos.z)
                 end
 			end
-		end
 	
 		
 --Healing
@@ -116,7 +100,7 @@ local myHero = GetMyHero()
 				for _, ally in pairs(GoS:GetAllyHeroes()) do
 						if (100 * GetCurrentHP(ally))/GetMaxHP(ally) <  SorakaMenu.Healing.HealW:Value() and
 							CanUseSpell(myHero, _W) == READY and GoS:IsInDistance(ally, 600) then
-								CastTargetSpell(ally, _W);
+								CastTargetSpell(ally, _W)
                         end
                     end
                 end
